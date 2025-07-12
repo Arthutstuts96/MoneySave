@@ -1,3 +1,3 @@
-# moneysave
+# MoneySave
 
-A new Flutter project.
+<img src="assets/images/moneysave-logo.png" alt="Logo do MoneySave"/>

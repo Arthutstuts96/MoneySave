@@ -37,6 +37,10 @@ class ExpenseService {
     await _saveExpenses(expenses);
   }
 
+  Future<void> deleteAllExpenses() async {
+    await _storage.deleteAll();
+  }
+
   Future<void> _saveExpenses(List<Expense> expenses) async {
     final jsonString = json.encode(expenses.map((e) => e.toJson()).toList());
     await _storage.write(key: _storageKey, value: jsonString);

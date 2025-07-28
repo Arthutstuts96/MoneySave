@@ -5,4 +5,5 @@ abstract class ExpenseRepository {
   Future<List<Expense>?> getAllExpenses(); 
   Future<void> editExpense({required Expense newExpense}); 
   Future<void> removeExpense({required String id}); 
+  Future<void> deleteAllExpenses();
 }

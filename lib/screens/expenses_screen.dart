@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:moneysave/controllers/expense_controller.dart';
 import 'package:moneysave/domain/model/expense.dart';
 import 'package:moneysave/screens/new_expense_screen.dart';
+import 'package:moneysave/utils/functions/expiration_date.dart';
+import 'package:moneysave/utils/functions/format_monetary.dart';
 import 'package:moneysave/utils/functions/page_transition_animate.dart';
+import 'package:moneysave/utils/functions/priority_label.dart';
 
 class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({super.key});
@@ -33,7 +36,44 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Seus gastos")),
+      appBar: AppBar(
+        title: const Text("Seus gastos"),
+        shadowColor: Colors.black,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Confirmar exclusão'),
+                      content: const Text(
+                        'Tem certeza que quer deletar todas as despesas? Essa ação não pode ser revertida',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('Cancelar', style: TextStyle(color: Colors.grey[800]),),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            _expenseController.deleteAllExpenses().then((_) {
+                              _loadExpenses();
+                            });
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Deletar', style: TextStyle(color: Colors.red),),
+                        ),
+                      ],
+                    ),
+              );
+            },
+            icon: Icon(Icons.clear, color: Colors.red),
+          ),
+        ],
+      ),
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -47,15 +87,52 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                             Center(child: Text("Nenhuma despesa encontrada.")),
                           ],
                         )
-                        : ListView.builder(
+                        : ListView.separated(
                           itemCount: allExpenses.length,
+                          separatorBuilder: (BuildContext context, int index) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 4,
+                                horizontal: 20,
+                              ),
+                              child: Divider(),
+                            );
+                          },
                           itemBuilder: (context, index) {
                             final expense = allExpenses[index];
                             return ListTile(
                               title: Text(
-                                "R\$ ${expense.value.toStringAsFixed(2)}",
+                                '${expense.name}\n${formatMonetary(expense.value)}',
                               ),
-                              subtitle: Text(expense.priority.name),
+                              subtitle: Text(
+                                '${getPriorityLabel(expense.priority)} • ${getExpirationDate(expense)}',
+                              ),
+                              trailing: IconButton(
+                                onPressed: () async {
+                                  await _expenseController.removeExpense(
+                                    id: expense.id ?? '-1',
+                                  );
+                                  _loadExpenses();
+                                },
+                                icon: Icon(Icons.delete_forever),
+                                color: Colors.red[700],
+                                iconSize: 28,
+                              ),
+                              leading: Checkbox(
+                                value: expense.isActive,
+                                onChanged: (value) async {
+                                  final Expense newExpense = expense.copyWith(
+                                    isActive: !expense.isActive,
+                                  );
+                                  await _expenseController.editExpense(
+                                    newExpense: newExpense,
+                                  );
+                                  setState(() {
+                                    expense.isActive = value!;
+                                  });
+                                  print(expense);
+                                },
+                              ),
                             );
                           },
                         ),

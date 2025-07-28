@@ -11,9 +11,8 @@ class ExpenseController implements ExpenseRepository {
   }
 
   @override
-  Future<bool> editExpense({required Expense newExpense}) {
-    // TODO: implement editExpense
-    throw UnimplementedError();
+  Future<void> editExpense({required Expense newExpense}) async {
+    return await _expenseService.updateExpense(newExpense);
   }
 
   @override
@@ -22,8 +21,12 @@ class ExpenseController implements ExpenseRepository {
   }
 
   @override
-  Future<bool> removeExpense({required String id}) {
-    // TODO: implement removeExpense
-    throw UnimplementedError();
+  Future<void> removeExpense({required String id}) async {
+    return await _expenseService.deleteExpense(id);
+  }
+  
+  @override
+  Future<void> deleteAllExpenses() async {
+    return await _expenseService.deleteAllExpenses();
   }
 }

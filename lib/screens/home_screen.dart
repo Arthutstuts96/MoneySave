@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:moneysave/controllers/expense_controller.dart';
+import 'package:moneysave/domain/model/expense.dart';
+import 'package:moneysave/utils/functions/format_monetary.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -8,7 +11,30 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final ExpenseController _expenseController = ExpenseController();
+  late final List<Expense> allExpenses;
   bool cashVisible = false;
+  double totalValue = .0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExpenses();
+  }
+
+  Future<void> _loadExpenses() async {
+    final List<Expense> response = await _expenseController.getAllExpenses();
+    double newTotalValue = 0;
+    for (Expense ex in response) {
+      if (ex.isActive) {
+        newTotalValue += ex.value;
+      }
+    }
+    setState(() {
+      allExpenses = response;
+      totalValue = newTotalValue;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   spacing: 8,
                   children: [
-                    Text("Aqui está o balanço atual das suas finanças:"),
+                    Text("Aqui está o balanço atual das suas despesas:"),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -51,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           child: Text(
-                            "R\$ 5.405,54",
+                            formatMonetary(totalValue),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 32,
@@ -60,11 +86,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ),
-                        IconButton(onPressed: (){
-                          setState(() {
-                            cashVisible = !cashVisible;
-                          });
-                        }, icon: Icon(cashVisible ? Icons.remove_red_eye_outlined : Icons.remove_red_eye_rounded))
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              cashVisible = !cashVisible;
+                            });
+                          },
+                          icon: Icon(
+                            cashVisible
+                                ? Icons.remove_red_eye_outlined
+                                : Icons.remove_red_eye_rounded,
+                          ),
+                        ),
                       ],
                     ),
                   ],

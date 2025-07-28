@@ -4,6 +4,7 @@ import 'package:moneysave/utils/consts.dart';
 
 class Expense {
   String? id;
+  String name;
   double value;
   DateTime? creationDate;
   int? duration;
@@ -12,6 +13,7 @@ class Expense {
 
   Expense({
     this.id,
+    required this.name,
     required this.value,
     required this.creationDate,
     this.duration,
@@ -21,6 +23,7 @@ class Expense {
 
   Expense copyWith({
     String? id,
+    String? name,
     double? value,
     DateTime? creationDate,
     int? duration,
@@ -29,6 +32,7 @@ class Expense {
   }) {
     return Expense(
       id: id ?? this.id,
+      name: name ?? this.name,
       value: value ?? this.value,
       creationDate: creationDate ?? this.creationDate,
       duration: duration ?? this.duration,
@@ -40,6 +44,7 @@ class Expense {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
+      'name': name,
       'value': value,
       'creationDate': creationDate?.millisecondsSinceEpoch,
       'duration': duration,
@@ -51,6 +56,7 @@ class Expense {
   factory Expense.fromMap(Map<String, dynamic> map) {
     return Expense(
       id: map['id'] != null ? map['id'] as String : null,
+      name: map['name'] as String,
       value: map['value'] as double,
       creationDate:
           map['creationDate'] != null
@@ -72,7 +78,7 @@ class Expense {
 
   @override
   String toString() {
-    return 'Expense(id: $id, value: $value, creationDate: $creationDate, duration: $duration, isActive: $isActive, priority: $priority)';
+    return 'Expense(id: $id, name: $name, value: $value, creationDate: $creationDate, duration: $duration, isActive: $isActive, priority: $priority)';
   }
 
   @override
@@ -80,6 +86,7 @@ class Expense {
     if (identical(this, other)) return true;
 
     return other.id == id &&
+        other.name == name &&
         other.value == value &&
         other.creationDate == creationDate &&
         other.duration == duration &&
@@ -90,6 +97,7 @@ class Expense {
   @override
   int get hashCode {
     return id.hashCode ^
+        name.hashCode ^
         value.hashCode ^
         creationDate.hashCode ^
         duration.hashCode ^

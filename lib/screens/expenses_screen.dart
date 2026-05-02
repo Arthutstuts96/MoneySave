@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:moneysave/controllers/expense_controller.dart';
 import 'package:moneysave/domain/models/expense.dart';
+import 'package:moneysave/screens/components/expense_card.dart';
 
 class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({super.key});
@@ -25,10 +28,43 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     });
   }
 
+  Future<void> _deleteExpense(String id) async {
+    await _expenseController.deleteExpense(id);
+    _getAllExpenses();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final Color draggableItemColor = colorScheme.secondary;
+
+    Widget proxyDecorator(
+      Widget child,
+      int index,
+      Animation<double> animation,
+    ) {
+      return AnimatedBuilder(
+        animation: animation,
+        builder: (BuildContext context, Widget? child) {
+          final double animValue = Curves.easeInOut.transform(animation.value);
+          final double elevation = lerpDouble(0, 7, animValue)!;
+          return Material(
+            elevation: elevation,
+            color: draggableItemColor,
+            shadowColor: draggableItemColor,
+            child: child,
+          );
+        },
+        child: child,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
+        title: Text(
+          "Suas despesas",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             onPressed: () async {
@@ -57,7 +93,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     return SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: SizedBox(
-                        height: MediaQuery.of(context).size.height,
+                        height: MediaQuery.of(context).size.height / 2,
                         child: const Center(
                           child: Text('Nenhuma despesa encontrada.'),
                         ),
@@ -65,23 +101,33 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     );
                   }
 
-                  return ListView.builder(
+                  return ReorderableListView.builder(
+                    proxyDecorator: proxyDecorator,
+                    onReorder: (oldIndex, newIndex) {
+                      setState(() {
+                        if (oldIndex < newIndex) {
+                          newIndex -= 1;
+                        }
+                        final Expense item = allExpenses.removeAt(oldIndex);
+                        allExpenses.insert(newIndex, item);
+                      });
+                    },
                     itemCount: allExpenses.length,
                     physics: const BouncingScrollPhysics(
                       parent: AlwaysScrollableScrollPhysics(),
                     ),
                     itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        child: Text(allExpenses[index].id),
+                      return ExpenseCard(
+                        key: Key(allExpenses[index].id),
+                        onDelete: _deleteExpense,
+                        expense: allExpenses[index],
                       );
                     },
                   );
                 }
-                return const Center(child: Text("Não tem bosta nenhuma"));
+                return const Center(
+                  child: Text("Não tem bosta nenhuma, provavelmente deu erro."),
+                );
             }
           },
         ),

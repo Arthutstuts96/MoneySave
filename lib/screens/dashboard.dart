@@ -16,23 +16,6 @@ class _DashboardState extends State<Dashboard> {
   final ExpenseController _expenseController = ExpenseController();
 
   int _index = 0;
-  List<Expense>? expenses;
-
-  @override
-  void initState() {
-    super.initState();
-    _getAllExpenses();
-  }
-
-  void _getAllExpenses() async {
-    // final SharedPreferences prefs = await SharedPreferences.getInstance();
-    // await prefs.clear();
-    List<Expense> allExpenses = await _expenseController.getAllExpenses();
-
-    setState(() {
-      expenses = allExpenses;
-    });
-  }
 
   final List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(icon: Icon(Icons.house), label: "Home"),

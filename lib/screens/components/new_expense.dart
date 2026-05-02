@@ -32,17 +32,29 @@ class _NewExpenseState extends State<NewExpense> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
+      int? months = _monthsController.text != ""
+          ? int.parse(_monthsController.text)
+          : null;
+
       final newExpense = Expense(
         id: uuid.v1(),
         name: _nameController.text,
-        value: double.parse(_valueController.text),
+        value: months != null
+            ? double.parse(_valueController.text) / months
+            : double.parse(_valueController.text),
         description: _descController.text,
-        months: _monthsController.text != ""
-            ? int.parse(_monthsController.text)
-            : null,
+        months: months,
       );
       widget.onSave(newExpense);
       Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Despesa adicionada com sucesso! Recarregue a tela para vê-la.",
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
   }
 
